@@ -16,7 +16,7 @@ They are both ERC20 tokens with extended functionalities.
 
 ERC1363 was introduced to extend the functionality of ERC20 tokens by simplifying interactions and enabling new use cases. Here are the main reasons for its introduction:
 
-- ERC20 tokens require multiple transactions to authorize and transfer tokens for payments (approve and transferFrom), which can be cumbersome and expensive in terms of gas costs.
+- ERC20 tokens require multiple transactions to authorize and transfer tokens for payments (approve and transferFrom), which can be expensive in terms of gas costs.
 
 - ERC1363 introduces transferAndCall and approveAndCall functions, allowing tokens to be transferred and a contract to be notified in a single transaction.
 
