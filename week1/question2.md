@@ -6,7 +6,7 @@ Not all tokens adhere to the ERC20 standard strictly. Some tokens:
 - Revert or throw an exception on failure.
 - Return no value at all, assuming that the call succeeded if it doesn't revert.
 
-SafeERC20 ensures that token operations like transfers, approvals, and transfers from are performed safely:
+SafeERC20 ensures that token operations like transfers, approvals, and transfers from are performed safely :
 
 1. First, it Uses the `call` opcode to invoke a function on the token contract with the provided data.
 2. If the call was not successful, it reverts the transaction.
