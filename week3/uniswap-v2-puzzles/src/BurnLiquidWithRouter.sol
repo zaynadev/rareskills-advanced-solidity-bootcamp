@@ -19,7 +19,25 @@ contract BurnLiquidWithRouter {
     }
 
     function burnLiquidityWithRouter(address pool, address usdc, address weth, uint256 deadline) public {
-        // your code start here
+        // Get the amount of liquidity tokens in the contract.
+        uint256 liquidity = IERC20(pool).balanceOf(address(this));
+        // Get the total supply of liquidity tokens.
+        uint256 totalSupply = IERC20(pool).totalSupply();
+
+        // Get the balance of USDC and WETH in the pool.
+        uint256 usdcBalance = IERC20(usdc).balanceOf(pool);
+        uint256 wethBalance = IERC20(weth).balanceOf(pool);
+
+        // Calculate the minimum amount of USDC and WETH to receive.
+        uint256 amountUSDCMin = (liquidity * usdcBalance) / totalSupply;
+        uint256 amountWETHMin = (liquidity * wethBalance) / totalSupply;
+
+        // Approve the router to spend the liquidity tokens.
+        IERC20(pool).approve(router, liquidity);
+        // Remove liquidity from the pool.
+        IUniswapV2Router(router).removeLiquidity(
+            usdc, weth, liquidity, amountUSDCMin, amountWETHMin, address(this), deadline
+        );
     }
 }
 
