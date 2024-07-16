@@ -5,6 +5,8 @@ import "./interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IERC20.sol";
 
 contract SimpleSwap {
+    error InsufficientInputAmount();
+    error InsufficientLiquidity();
     /**
      *  PERFORM A SIMPLE SWAP WITHOUT ROUTER EXERCISE
      *
@@ -13,6 +15,7 @@ contract SimpleSwap {
      *  from USDC/WETH pool.
      *
      */
+
     function performSwap(address pool, address weth, address usdc) public {
         /**
          *     swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata data);
@@ -22,7 +25,38 @@ contract SimpleSwap {
          *     to: recipient address to receive the USDC tokens.
          *     data: leave it empty.
          */
+        // Get WETH balance of this contract
+        uint256 amountWETHIn = IERC20(weth).balanceOf(address(this));
+        // Get reserves USDC and WETH from pool, token0 is USDC and token1 is WETH
+        (uint256 reserveUSDC, uint256 reserveWETH,) = IUniswapV2Pair(pool).getReserves();
+        // Calculate amount of USDC to receive using getAmountOut function from UniswapV2Library
+        uint256 amountUSDCOut = getAmountOut(amountWETHIn, reserveWETH, reserveUSDC);
+        // Transfer all WETH to pool
+        IERC20(weth).transfer(pool, amountWETHIn);
+        // Perform swap weth -> usdc
+        IUniswapV2Pair(pool).swap(amountUSDCOut, 0, address(this), "");
 
-        // your code start here
+        // @TODO: need slippage check
+    }
+
+    /**
+     * @notice  . Given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
+     * @dev     . Uniswap v2 getAmountOut function from UniswapV2Library.
+     * @param   amountIn  . The amount of asset being swapped in.
+     * @param   reserveIn  . The input asset reserve.
+     * @param   reserveOut  . The output asset reserve.
+     * @return  amountOut  . The amount of asset received after the swap.
+     */
+    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)
+        internal
+        pure
+        returns (uint256 amountOut)
+    {
+        require(amountIn > 0, InsufficientInputAmount());
+        require(reserveIn > 0 && reserveOut > 0, InsufficientLiquidity());
+        uint256 amountInWithFee = amountIn * 997;
+        uint256 numerator = amountInWithFee * reserveOut;
+        uint256 denominator = (reserveIn * 1000) + amountInWithFee;
+        amountOut = numerator / denominator;
     }
 }
