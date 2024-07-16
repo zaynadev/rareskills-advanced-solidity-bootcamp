@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "forge-std/console.sol";
 import "./interfaces/IERC20.sol";
 
 /**
@@ -29,13 +30,31 @@ contract MyMevBot {
     }
 
     function performArbitrage() public {
-        // your code here
+        // borrow 1000 USDC from flashLenderPool
+        IUniswapV3Pool(flashLenderPool).flash(address(this), 1000 * 1e6, 0, "");
     }
 
     function uniswapV3FlashCallback(uint256 _fee0, uint256, bytes calldata data) external {
+        // ensure the callback is from the flashLenderPool
         callMeCallMe();
+        // Get the USDC balance of this contract
+        uint256 usdcBal = IERC20(usdc).balanceOf(address(this));
 
-        // your code start here
+        // Swap USDC for WETH the WEth for USDT and finally USDT for USDC
+        address[] memory path = new address[](4);
+        path[0] = usdc;
+        path[1] = weth;
+        path[2] = usdt;
+        path[3] = usdc;
+
+        // Approve the router to spend the USDC
+        IERC20(usdc).approve(router, usdcBal);
+
+        // Perform the swap
+        IUniswapV2Router(router).swapExactTokensForTokens(usdcBal, 0, path, address(this), block.timestamp);
+
+        // Repay the flash loan with fee and keep the profit
+        IERC20(usdc).transfer(flashLenderPool, usdcBal + _fee0);
     }
 
     function callMeCallMe() private {
