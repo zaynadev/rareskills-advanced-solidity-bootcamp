@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "forge-std/console.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 
 contract Twap {
@@ -13,7 +14,8 @@ contract Twap {
      *  The challenge is to calculate the one-hour and one-day TWAP (Time-Weighted Average Price) of the first token in the
      *  given pool and store the results in the return variable.
      *
-     *  Hint: For each time interval, the player needs to take a snapshot in the first function, then calculate the TWAP
+     *  Hint: For each time interval, the player needs to take a snapshot in the first function,
+     *  then calculate the TWAP
      *  in the second function and divide it by the appropriate time interval.
      *
      */
@@ -31,29 +33,50 @@ contract Twap {
     uint256 public second1DaySnapShot_Price0Cumulative;
     uint32 public second1DaySnapShot_TimeStamp;
 
+    uint224 constant Q112 = 2 ** 112;
+
     constructor(address _pool) {
         pool = IUniswapV2Pair(_pool);
     }
 
     //**       ONE HOUR TWAP START      **//
     function first1HourSnapShot() public {
-        // your code here
+        first1HourSnapShot_Price0Cumulative = pool.price0CumulativeLast();
+
+        (,, first1HourSnapShot_TimeStamp) = pool.getReserves();
     }
 
     function second1HourSnapShot() public returns (uint224 oneHourTwap) {
-        // your code here
+        pool.sync();
 
+        second1HourSnapShot_Price0Cumulative = pool.price0CumulativeLast();
+        (,, second1HourSnapShot_TimeStamp) = pool.getReserves();
+
+        oneHourTwap = uint224(
+            (second1HourSnapShot_Price0Cumulative - first1HourSnapShot_Price0Cumulative)
+                / ((second1HourSnapShot_TimeStamp - first1HourSnapShot_TimeStamp))
+        );
         return oneHourTwap;
     }
     //**       ONE HOUR TWAP END      **//
 
     //**       ONE DAY TWAP START      **//
+
     function first1DaySnapShot() public {
-        // your code here
+        pool.sync();
+        first1DaySnapShot_Price0Cumulative = pool.price0CumulativeLast();
+        (,, first1DaySnapShot_TimeStamp) = pool.getReserves();
     }
 
     function second1DaySnapShot() public returns (uint224 oneDayTwap) {
-        // your code here
+        pool.sync();
+        second1DaySnapShot_Price0Cumulative = pool.price0CumulativeLast();
+        (,, second1DaySnapShot_TimeStamp) = pool.getReserves();
+
+        oneDayTwap = uint224(
+            (second1DaySnapShot_Price0Cumulative - first1DaySnapShot_Price0Cumulative)
+                / ((second1DaySnapShot_TimeStamp - first1DaySnapShot_TimeStamp))
+        );
 
         return (oneDayTwap);
     }
